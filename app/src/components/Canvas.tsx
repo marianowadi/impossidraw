@@ -5,6 +5,7 @@ export const Canvas = ({ onLeave }: { onLeave: () => void }) => {
   const [users, setUsers] = useState<
     Array<{ name: string; id: string; role: string }>
   >([])
+
   const canvasRef = useRef<HTMLCanvasElement>(null)
   useEffect(() => {
     const canvas: HTMLCanvasElement | null = canvasRef.current
@@ -91,6 +92,11 @@ export const Canvas = ({ onLeave }: { onLeave: () => void }) => {
         }
       })
 
+      socket.on('roomCreated', (data) => {
+        console.log(data)
+        setUsers(data.users)
+      })
+
       socket.on('sessionUsers', (data) => {
         console.log(data)
         setUsers(data)
@@ -98,7 +104,7 @@ export const Canvas = ({ onLeave }: { onLeave: () => void }) => {
     }
   }, [socket])
   return (
-    <div className="flex flex-col justify-center mt-4">
+    <div className="mt-4 flex flex-col justify-center">
       <canvas
         ref={canvasRef}
         width={800}
@@ -117,7 +123,7 @@ export const Canvas = ({ onLeave }: { onLeave: () => void }) => {
       </div>
       <button
         onClick={onLeave}
-        className="text-white border self-center p-2 m-2"
+        className="m-2 self-center border p-2 text-white"
       >
         Leave
       </button>
