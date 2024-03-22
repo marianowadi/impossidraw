@@ -99,20 +99,18 @@ const ParticipantForm = ({
   const [role, setRole] = useState<null | 'guess' | 'draw'>(null)
   const [userData, setUserData] = useState<{
     name: string
-    role: string
-    room: string
+    roomName: string
   }>({
     name: '',
-    role: '',
-    room: ''
+    roomName: ''
   })
-  const isSubmitDisabled = !userData.name || !userData.room
+  const isSubmitDisabled = !userData.name || !userData.roomName
   const handleNameSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     socket.connect()
-    socket.emit('userData', userData)
+
+    socket.emit('joinRoom', { ...userData, role })
     onLoginSubmit(true)
-    sessionStorage.setItem('impossidraw_user', JSON.stringify(userData))
   }
   return (
     <div className="flex flex-col">
@@ -122,9 +120,9 @@ const ParticipantForm = ({
         <input
           type="text"
           name="room"
-          value={userData.room}
+          value={userData.name}
           onChange={(e) =>
-            setUserData((prev) => ({ ...prev, room: e.target.value }))
+            setUserData((prev) => ({ ...prev, name: e.target.value }))
           }
         />
 
@@ -132,9 +130,9 @@ const ParticipantForm = ({
         <input
           type="text"
           name="name"
-          value={userData.name}
+          value={userData.roomName}
           onChange={(e) =>
-            setUserData((prev) => ({ ...prev, name: e.target.value }))
+            setUserData((prev) => ({ ...prev, roomName: e.target.value }))
           }
         />
 

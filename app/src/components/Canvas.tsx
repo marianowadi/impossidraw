@@ -1,10 +1,19 @@
 import { useEffect, useRef, useState } from 'react'
 import { socket } from '../api/socket'
+import { RoomState, User } from 'types/types'
+import { UserList } from './UserList'
 
 export const Canvas = ({ onLeave }: { onLeave: () => void }) => {
-  const [users, setUsers] = useState<
-    Array<{ name: string; id: string; role: string }>
-  >([])
+  const [roomState, setRoomState] = useState<RoomState>({
+    roomName: '',
+    word: undefined,
+    users: [],
+    isReady: false
+  })
+  const [guess, setGuess] = useState<string>('')
+  const loggedUser: User = JSON.parse(
+    sessionStorage.getItem('impossidraw_user') as string
+  )
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
   useEffect(() => {
@@ -45,10 +54,8 @@ export const Canvas = ({ onLeave }: { onLeave: () => void }) => {
       const dataURL = canvas.toDataURL() // Get the data URL of the canvas content
 
       // Send the dataURL or image data to the socket
-      // console.log('drawing ended')
       if (socket) {
         socket.emit('canvasImage', dataURL)
-        console.log('drawing ended')
       }
       isDrawing = false
     }
@@ -79,6 +86,7 @@ export const Canvas = ({ onLeave }: { onLeave: () => void }) => {
     if (socket) {
       // Event listener for receiving canvas data from the socket
       socket.on('canvasImage', (data) => {
+        console.log(data)
         // Create an image object from the data URL
         const image = new Image()
         image.src = data
@@ -93,40 +101,115 @@ export const Canvas = ({ onLeave }: { onLeave: () => void }) => {
       })
 
       socket.on('roomCreated', (data) => {
-        console.log(data)
-        setUsers(data.users)
+        setRoomState(data)
       })
 
-      socket.on('sessionUsers', (data) => {
-        console.log(data)
-        setUsers(data)
+      socket.on('userJoined', (data) => {
+        setRoomState((prev) => ({
+          ...prev,
+          users: data.users,
+          roomName: data.roomName
+        }))
+      })
+      socket.on('userUpdate', (data) => {
+        setRoomState((prev) => ({
+          ...prev,
+          users: [...data.users]
+        }))
+      })
+      socket.on('roomStarted', (data) => {
+        setRoomState((prev) => ({ ...prev, ...data }))
+      })
+
+      socket.on('word', (data) => {
+        setRoomState((prev) => ({ ...prev, word: data.word }))
+      })
+
+      socket.on('guessFailed', () => setGuess(''))
+
+      socket.on('guessSucceeded', (data) => {
+        alert(`Word has been correctly guessed by ${data.user}`)
       })
     }
   }, [socket])
+
+  const handleStartRoom = () => {
+    socket.emit('roomStart', { roomName: roomState.roomName })
+  }
+
+  const handleStatusChange = () => {
+    socket.emit('statusChange', {
+      id: loggedUser.id,
+      isReady: !loggedUser.isReady,
+      roomName: roomState.roomName
+    })
+  }
+
+  const handleSubmitGuess = () => {
+    socket.emit('guessAttempt', {
+      id: loggedUser.id,
+      roomName: roomState.roomName,
+      guess: guess
+    })
+  }
+
   return (
-    <div className="mt-4 flex flex-col justify-center">
-      <canvas
-        ref={canvasRef}
-        width={800}
-        height={600}
-        style={{ backgroundColor: 'white' }}
-      />
-      <div>
-        <h2 className="text-white">Users:</h2>
-        <ul>
-          {users.map((user) => (
-            <li key={user.id} className="text-white">
-              {user.name} - {user.role}
-            </li>
-          ))}
-        </ul>
+    <div className="mt-4 flex flex-col items-center justify-center">
+      <div className="flex flex-row justify-center">
+        {!roomState.isReady && (
+          <div>
+            <h1 className="text-2xl font-bold  text-white">
+              Waiting for other players <br />
+              Room name: {roomState.roomName}
+            </h1>
+          </div>
+        )}
+        <canvas
+          ref={canvasRef}
+          width={roomState.isReady ? 800 : 0}
+          height={roomState.isReady ? 600 : 0}
+          style={{
+            backgroundColor: 'white'
+          }}
+        />
+
+        <div className="flex flex-col justify-between border">
+          <UserList
+            users={roomState.users}
+            loggedUser={loggedUser}
+            onStatusChange={handleStatusChange}
+          />
+          <button onClick={onLeave} className="m-2  border p-2 text-white">
+            Leave
+          </button>
+          {loggedUser?.isHost && !roomState.isReady && (
+            <button
+              onClick={handleStartRoom}
+              className="m-2 self-center border p-2 text-white"
+            >
+              Start
+            </button>
+          )}
+        </div>
       </div>
-      <button
-        onClick={onLeave}
-        className="m-2 self-center border p-2 text-white"
-      >
-        Leave
-      </button>
+      {roomState.isReady && loggedUser.role === 'guess' ? (
+        <div className="flex flex-col">
+          <input
+            type="text"
+            value={guess}
+            onChange={(e) => setGuess(e.target.value)}
+            className="my-4 border border-white text-xl"
+          />
+          <button
+            onClick={handleSubmitGuess}
+            className="  border p-2 text-white"
+          >
+            Guess
+          </button>
+        </div>
+      ) : (
+        <h1 className="text-3xl text-white">{roomState.word}</h1>
+      )}
     </div>
   )
 }

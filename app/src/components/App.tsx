@@ -36,13 +36,22 @@ function App() {
     }
   }, [])
 
+  useEffect(() => {
+    if (socket) {
+      socket.on('joinCallback', (data) => {
+        sessionStorage.setItem('impossidraw_user', JSON.stringify(data))
+      })
+    }
+  }, [socket])
+
   const handleOnLeave = () => {
     socket.disconnect()
     setIsLogged(false)
     sessionStorage.removeItem('impossidraw_user')
   }
+
   return (
-    <div className="bg-black h-screen flex flex-col items-center pt-24 ">
+    <div className="flex h-lvh  flex-col items-center bg-black pt-6 ">
       <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl">
         Impossidraw
       </h1>
