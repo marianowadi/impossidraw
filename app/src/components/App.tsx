@@ -1,7 +1,8 @@
 import { socket } from 'api/socket'
 import { useEffect, useState } from 'react'
 import { JoinForm } from './JoinForm'
-import { Canvas } from './Canvas'
+import { GameContextProvider } from './GameContextProvider'
+import { GameBoard } from './GameBoard'
 
 function App() {
   const [isLogged, setIsLogged] = useState<boolean>(false)
@@ -52,14 +53,16 @@ function App() {
 
   return (
     <div className="flex h-lvh  flex-col items-center bg-black pt-6 ">
-      <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl">
-        Impossidraw
-      </h1>
-      {isLogged ? (
-        <Canvas onLeave={handleOnLeave} />
-      ) : (
-        <JoinForm onLoginSubmit={setIsLogged} />
-      )}
+      <GameContextProvider>
+        <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl">
+          Impossidraw
+        </h1>
+        {isLogged ? (
+          <GameBoard onLeave={handleOnLeave} />
+        ) : (
+          <JoinForm onLoginSubmit={setIsLogged} />
+        )}
+      </GameContextProvider>
     </div>
   )
 }

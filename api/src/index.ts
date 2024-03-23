@@ -124,7 +124,7 @@ io.on(SOCKET_EVENTS.CONNECTION, function (socket) {
             const attemptResult = existingRoom.checkGuess(guess)
             if (attemptResult) {
                 // Drawers and guessee earn points
-                existingRoom.updateScores({ userId, points: 50 })
+                existingRoom.updateScores({ userId, points: 20 })
                 // Reset canvas
                 io.to(roomName).emit(
                     SOCKET_EVENTS.CANVAS_IMAGE,

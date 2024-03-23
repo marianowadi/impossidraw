@@ -1,13 +1,16 @@
+import { WORDS } from '../constants'
 import { User } from '../types/socket'
+import { getRandomValue } from '../utils'
 
 export class Room {
     #name: string
     #users: Array<User> = []
     #isReady: boolean = false
     #word: string
+    #goal: number = 150
     constructor(name: string) {
         this.#name = name
-        this.#word = 'horse'
+        this.#word = WORDS[getRandomValue(WORDS.length)]
     }
 
     getInfo() {

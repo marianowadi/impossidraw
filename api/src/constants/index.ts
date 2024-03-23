@@ -13,3 +13,12 @@ export const SOCKET_EVENTS = {
     GUESS_SUCCEEDED: 'guessSucceeded',
     GUESS_FAILED: 'guessFailed',
 }
+
+export const WORDS = [
+    'horse',
+    'car',
+    'apple',
+    'plane',
+    'computer',
+    'celebration',
+]
