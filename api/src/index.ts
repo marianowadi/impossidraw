@@ -31,6 +31,7 @@ io.on(SOCKET_EVENTS.CONNECTION, function (socket) {
                 role: data.role,
                 isHost: true,
                 isReady: true,
+                isWinner: false,
                 points: 0,
             }
             room.addUser(newUser)
@@ -64,6 +65,7 @@ io.on(SOCKET_EVENTS.CONNECTION, function (socket) {
                 role: role,
                 isHost: false,
                 isReady: false,
+                isWinner: false,
                 points: 0,
             }
             if (newUser.role === 'draw') {
@@ -125,16 +127,27 @@ io.on(SOCKET_EVENTS.CONNECTION, function (socket) {
             if (attemptResult) {
                 // Drawers and guessee earn points
                 existingRoom.updateScores({ userId, points: 20 })
-                // Reset canvas
-                io.to(roomName).emit(
-                    SOCKET_EVENTS.CANVAS_IMAGE,
-                    'data:image/png;base64,'
-                )
-                // Send new word
-                io.to(roomName).emit(SOCKET_EVENTS.GUESS_SUCCEEDED, {
-                    status: 'success',
-                    user: userId,
-                })
+
+                // Check if user has won
+                const winner = existingRoom.hasWinner()
+                const { users, isFinished } = existingRoom.getInfo()
+
+                if (winner) {
+                    io.to(roomName).emit(SOCKET_EVENTS.PLAYER_WON, {
+                        users: users,
+                        isFinished: isFinished,
+                    })
+                } else {
+                    existingRoom.renewWord()
+                    io.to(roomName).emit(SOCKET_EVENTS.GUESS_SUCCEEDED, {
+                        status: 'success',
+                        user: userId,
+                        users: users,
+                    })
+                    io.to(`${data.roomName}-draw`).emit('word', {
+                        word: existingRoom.getWord(),
+                    })
+                }
             } else {
                 socket.emit(SOCKET_EVENTS.GUESS_FAILED)
             }

@@ -8,7 +8,7 @@ export const UserList = ({
   loggedUser: User
   onStatusChange: () => void
 }) => {
-  const { roomState, setRoomState } = useGame()
+  const { roomState } = useGame()
   return (
     <div>
       <h2 className="m-2 text-white">Users:</h2>

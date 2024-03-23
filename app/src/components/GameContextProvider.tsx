@@ -14,7 +14,8 @@ const GameContextProvider = ({ children }: { children: ReactNode }) => {
     roomName: '',
     word: undefined,
     users: [],
-    isReady: false
+    isReady: false,
+    isFinished: false
   })
   const value = { roomState, setRoomState }
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>

@@ -73,7 +73,6 @@ export const Canvas = () => {
     if (socket) {
       // Event listener for receiving canvas data from the socket
       socket.on('canvasImage', (data) => {
-        console.log(data)
         // Create an image object from the data URL
         const image = new Image()
         image.src = data
@@ -85,6 +84,13 @@ export const Canvas = () => {
         image.onload = () => {
           ctx?.drawImage(image, 0, 0)
         }
+      })
+
+      socket.on('guessSucceeded', () => {
+        const canvas = canvasRef.current
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        const ctx = canvas?.getContext('2d')
+        ctx?.clearRect(0, 0, 800, 600)
       })
     }
   }, [socket])

@@ -7,7 +7,8 @@ export class Room {
     #users: Array<User> = []
     #isReady: boolean = false
     #word: string
-    #goal: number = 150
+    #goal: number = 40
+    #isFinished: boolean = false
     constructor(name: string) {
         this.#name = name
         this.#word = WORDS[getRandomValue(WORDS.length)]
@@ -17,6 +18,7 @@ export class Room {
         return {
             name: this.#name,
             isReady: this.#isReady,
+            isFinished: this.#isFinished,
             users: this.#users,
         }
     }
@@ -45,6 +47,7 @@ export class Room {
                 role: role,
                 isHost: isHost,
                 isReady: isReady,
+                isWinner: false,
                 points: 0,
             })
         }
@@ -72,9 +75,11 @@ export class Room {
         const users = [...this.#users]
         this.#users = users.map((user) => {
             if (user.id === userId || user.role === 'draw') {
+                const newPoints = user.points + points
                 return {
                     ...user,
-                    points: user.points + points,
+                    points: newPoints,
+                    isWinner: newPoints >= this.#goal ? true : false,
                 }
             } else {
                 return user
@@ -82,7 +87,27 @@ export class Room {
         })
     }
 
+    hasWinner() {
+        const winner = this.#users.find((user) => user.isWinner)
+        if (winner) this.#isFinished = true
+        return winner
+    }
+
+    renewWord() {
+        const previousWord = this.#word
+        const newWord = this.#getNewWord()
+        if (previousWord === newWord) {
+            this.renewWord()
+        } else {
+            this.#word = newWord
+        }
+    }
+
     checkGuess(value: string) {
         return value === this.#word
+    }
+
+    #getNewWord() {
+        return WORDS[getRandomValue(WORDS.length)]
     }
 }

@@ -8,4 +8,5 @@ export type User = {
     role: Role
     isReady: boolean
     isHost: boolean
+    isWinner: boolean
 }

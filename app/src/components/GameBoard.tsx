@@ -42,7 +42,19 @@ export const GameBoard = ({ onLeave }: { onLeave: () => void }) => {
       socket.on('guessFailed', () => setGuess(''))
 
       socket.on('guessSucceeded', (data) => {
+        console.log(data)
         alert(`Word has been correctly guessed by ${data.user}`)
+        setRoomState((prev) => ({ ...prev, users: data.users }))
+        setGuess('')
+      })
+
+      socket.on('playerWon', (data) => {
+        console.log(data)
+        setRoomState((prev) => ({
+          ...prev,
+          users: data.users,
+          isFinished: data.isFinished
+        }))
       })
     }
   }, [socket])
@@ -61,7 +73,7 @@ export const GameBoard = ({ onLeave }: { onLeave: () => void }) => {
 
   const handleSubmitGuess = () => {
     socket.emit('guessAttempt', {
-      id: loggedUser.id,
+      userId: loggedUser.id,
       roomName: roomState.roomName,
       guess: guess
     })
@@ -70,15 +82,18 @@ export const GameBoard = ({ onLeave }: { onLeave: () => void }) => {
   return (
     <div className="mt-4 flex flex-col items-center justify-center">
       <div className="flex flex-row justify-center">
-        {!roomState.isReady ? (
+        {!roomState.isReady && (
           <div>
             <h1 className="text-2xl font-bold  text-white">
               Waiting for other players <br />
               Room name: {roomState.roomName}
             </h1>
           </div>
-        ) : (
+        )}
+        {roomState.isReady && !roomState.isFinished ? (
           <Canvas />
+        ) : (
+          <h1 className="text-3xl text-white">Congratulations!</h1>
         )}
 
         <div className="flex flex-col justify-between border">
