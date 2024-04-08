@@ -15,10 +15,10 @@ export const UserList = ({
       <ul>
         {roomState.users?.map((user) => (
           <li key={user.id} className="m-2 text-white">
-            {user.name} {user.isHost ? '(Host)' : ''} -{' '}
-            {user.role === 'draw' ? '✍' : '🔮'} -
-            {roomState.isReady ? '' : user.isReady ? 'Ready' : 'Not ready'}
-            {user.points}
+            {user.name} {user.isHost ? '(Host)' : ''}
+            {user.role === 'draw' ? '✍' : '🔮'} -{' '}
+            {roomState.isReady ? '' : user.isReady ? 'Ready' : 'Not ready'}{' '}
+            {user.points} points
             {loggedUser.id === user.id && !user.isReady && (
               <button className="m-2 border p-2" onClick={onStatusChange}>
                 I'm ready!

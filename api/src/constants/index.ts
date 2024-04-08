@@ -13,6 +13,8 @@ export const SOCKET_EVENTS = {
     GUESS_SUCCEEDED: 'guessSucceeded',
     GUESS_FAILED: 'guessFailed',
     PLAYER_WON: 'playerWon',
+    GUEST_LEAVE: 'guestLeave',
+    HOST_LEAVE: 'hostLeave',
 }
 
 export const WORDS = [

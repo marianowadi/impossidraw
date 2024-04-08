@@ -14,7 +14,7 @@ const io = new Server(server, {
     },
 })
 const PORT = 5009
-const rooms: Array<Room> = []
+let rooms: Array<Room> = []
 
 io.on(SOCKET_EVENTS.CONNECTION, function (socket) {
     console.log('A user has connected :', socket.id)
@@ -153,9 +153,37 @@ io.on(SOCKET_EVENTS.CONNECTION, function (socket) {
             }
         }
     )
+
+    socket.on('disconnect', () => {
+        console.log('Socket disconnected: ', socket.id)
+        const userRoom = rooms.find((room) =>
+            room.users.find((user) => user.socketId === socket.id)
+        )
+        if (!userRoom) return
+        const user = userRoom.users.find((user) => user.socketId === socket.id)
+        if (!user) return
+        if (user.isHost) {
+            // 1. Disconnect everybody in room
+            io.in(userRoom.getRoomName()).disconnectSockets(true)
+            // 2. Delete room from array
+            deleteRoom(userRoom.getRoomName())
+        } else {
+            // 1. Remove user from room users
+            userRoom.removeUser(user.id)
+            // 2. Leave room
+            socket.leave(userRoom.getRoomName())
+        }
+    })
 })
 
 // Start the WebSocket server
 server.listen(PORT, () => {
     console.log(`WebSocket server is running on port ${PORT}`)
 })
+
+function deleteRoom(roomName: string) {
+    const filteredRooms = rooms.filter(
+        (room) => room.getRoomName() !== roomName
+    )
+    rooms = filteredRooms
+}

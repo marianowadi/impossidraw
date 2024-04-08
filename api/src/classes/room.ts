@@ -4,7 +4,7 @@ import { getRandomValue } from '../utils'
 
 export class Room {
     #name: string
-    #users: Array<User> = []
+    users: Array<User> = []
     #isReady: boolean = false
     #word: string
     #goal: number = 40
@@ -19,7 +19,7 @@ export class Room {
             name: this.#name,
             isReady: this.#isReady,
             isFinished: this.#isFinished,
-            users: this.#users,
+            users: this.users,
         }
     }
 
@@ -39,8 +39,8 @@ export class Room {
         isReady = false,
         isHost = false,
     }: User) {
-        if (!this.#users.find((user) => user.name === name)) {
-            this.#users.push({
+        if (!this.users.find((user) => user.name === name)) {
+            this.users.push({
                 id: id,
                 socketId: socketId,
                 name: name,
@@ -53,9 +53,14 @@ export class Room {
         }
     }
 
+    removeUser(userId: string) {
+        const users = [...this.users]
+        this.users = users.filter((user) => user.id !== userId)
+    }
+
     updateUser({ id, isReady }: { id: string; isReady: boolean }) {
-        const users = [...this.#users]
-        this.#users = users.map((user) => {
+        const users = [...this.users]
+        this.users = users.map((user) => {
             if (user.id === id) {
                 return {
                     ...user,
@@ -72,8 +77,8 @@ export class Room {
     }
 
     updateScores({ userId, points }: { userId: string; points: number }) {
-        const users = [...this.#users]
-        this.#users = users.map((user) => {
+        const users = [...this.users]
+        this.users = users.map((user) => {
             if (user.id === userId || user.role === 'draw') {
                 const newPoints = user.points + points
                 return {
@@ -88,7 +93,7 @@ export class Room {
     }
 
     hasWinner() {
-        const winner = this.#users.find((user) => user.isWinner)
+        const winner = this.users.find((user) => user.isWinner)
         if (winner) this.#isFinished = true
         return winner
     }

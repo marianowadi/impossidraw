@@ -90,21 +90,19 @@ export const GameBoard = ({ onLeave }: { onLeave: () => void }) => {
             </h1>
           </div>
         )}
-        {roomState.isReady && !roomState.isFinished ? (
-          <Canvas />
-        ) : (
+        {roomState.isReady && !roomState.isFinished && <Canvas />}
+        {roomState.isFinished && (
           <h1 className="text-3xl text-white">Congratulations!</h1>
         )}
-
-        <div className="flex flex-col justify-between border">
-          <UserList
-            loggedUser={loggedUser}
-            onStatusChange={handleStatusChange}
-          />
-          <button onClick={onLeave} className="m-2  border p-2 text-white">
-            Leave
-          </button>
-          {loggedUser?.isHost && !roomState.isReady && (
+      </div>
+      <div className="mt-4 flex  flex-col justify-between border">
+        <UserList loggedUser={loggedUser} onStatusChange={handleStatusChange} />
+        <button onClick={onLeave} className="m-2  border p-2 text-white">
+          Leave
+        </button>
+        {loggedUser?.isHost &&
+          !roomState.isReady &&
+          roomState.users.length >= 2 && (
             <button
               onClick={handleStartRoom}
               className="m-2 self-center border p-2 text-white"
@@ -112,7 +110,6 @@ export const GameBoard = ({ onLeave }: { onLeave: () => void }) => {
               Start
             </button>
           )}
-        </div>
       </div>
       {roomState.isReady && loggedUser.role === 'guess' ? (
         <div className="flex flex-col">
