@@ -2,9 +2,10 @@ import { Server } from 'socket.io'
 import express, { Express, Request, Response } from 'express'
 import { v4 as uuidv4 } from 'uuid'
 import http from 'http'
-import { Role, User } from './types/socket'
+import { Role } from './types/socket'
 import { SOCKET_EVENTS } from './constants'
 import { Room } from './classes/room'
+import { User } from './classes/User'
 
 const app = express()
 const server = http.createServer()
@@ -24,16 +25,7 @@ io.on(SOCKET_EVENTS.CONNECTION, function (socket) {
         (data: { name: string; role: Role }) => {
             const roomName = 'room'
             const room = new Room(roomName)
-            const newUser = {
-                id: uuidv4(),
-                socketId: socket.id,
-                name: data.name,
-                role: data.role,
-                isHost: true,
-                isReady: true,
-                isWinner: false,
-                points: 0,
-            }
+            const newUser = new User(socket.id, data.name, data.role, true)
             room.addUser(newUser)
             rooms.push(room)
             const { name, isReady, users } = room.getInfo()
@@ -58,16 +50,7 @@ io.on(SOCKET_EVENTS.CONNECTION, function (socket) {
                 (room) => room.getRoomName() === roomName
             )
             if (!existingRoom) throw Error('Room not found')
-            const newUser = {
-                id: uuidv4(),
-                socketId: socket.id,
-                name: name,
-                role: role,
-                isHost: false,
-                isReady: false,
-                isWinner: false,
-                points: 0,
-            }
+            const newUser = new User(socket.id, name, role)
             if (newUser.role === 'draw') {
                 socket.join(`${roomName}-draw`)
             }
